@@ -25,7 +25,7 @@ void setup() {
 
     // reset settings - wipe stored credentials for testing
     // these are stored by the esp library
-    // wm.resetSettings();
+    //  wm.resetSettings();
 
     // Automatically connect using saved credentials,
     // if connection fails, it starts an access point with the specified name ( "AutoConnectAP"),
@@ -47,11 +47,65 @@ void setup() {
 
 }
 
+void PostTemp(float t){
+  String url = "http://115.74.233.26:80/v1/api/templogs";
+  StaticJsonDocument<200> Tempdoc; // 200 là kích thước tối đa của JSON
 
+  Tempdoc["value"] = t; // Thay đổi giá trị này bằng giá trị thực của nhiet do
+    // Chuyển đổi JSON thành chuỗi
+  String jsonTemp;
+  serializeJson(Tempdoc, jsonTemp);
+
+  // Gửi POST request
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+
+  // // Gửi request và nhận kết quả
+  int httpResponseCode = http.POST(jsonTemp);
+  if (httpResponseCode > 0) {
+    String response = http.getString(); // Nhận phản hồi từ server
+    Serial.println(httpResponseCode);
+    Serial.print("Response Temp post: ");
+    Serial.println(response);
+  } else {
+    Serial.print("[Temp] Error on HTTP request: ");
+    Serial.println(httpResponseCode);
+  }
+
+  http.end(); // Kết thúc kết nối HTTP
+}
+
+void PostMois(float h){
+  String url = "http://115.74.233.26:80/v1/api/moisturelogs";
+  StaticJsonDocument<200> Moisdoc; // 200 là kích thước tối đa của JSON
+
+  Moisdoc["value"] = h; // Thay đổi giá trị này bằng giá trị thực của độ ẩm
+    // Chuyển đổi JSON thành chuỗi
+  String jsonMois;
+  serializeJson(Moisdoc, jsonMois);
+
+  // Gửi POST request
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+
+  // // Gửi request và nhận kết quả
+  int httpResponseCode = http.POST(jsonMois);
+  if (httpResponseCode > 0) {
+    String response = http.getString(); // Nhận phản hồi từ server
+    Serial.println(httpResponseCode);
+    Serial.print("Response Mois post: ");
+    Serial.println(response);
+  } else {
+    Serial.print("[Mois] Error on HTTP request: ");
+    Serial.println(httpResponseCode);
+  }
+
+  http.end(); // Kết thúc kết nối HTTP
+}
 
 void loop() {
     // Wait a few seconds between measurements.
-  delay(3000);
+  delay(5000);
 
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
@@ -72,44 +126,6 @@ void loop() {
   Serial.print(t);
   Serial.println(" *C ");
 
-  // Compute heat index in Celsius (isFahreheit = false)
-  // float hic = dht.computeHeatIndex(t, h, false);
-
-  /*
-
-  // Địa chỉ URL của server bạn muốn gửi request đến
-  String url = "http://10.13.131.1:8080/v1/api/templogs";
-
-  // Dữ liệu bạn muốn gửi trong request
- StaticJsonDocument<200> doc; // 200 là kích thước tối đa của JSON
-  doc["value"] = 50.5; // Thay đổi giá trị này bằng giá trị thực của độ ẩm
-//  doc["temperature"] = 25.3; // Thay đổi giá trị này bằng giá trị thực của nhiệt độ
-
-  // Chuyển đổi JSON thành chuỗi
-  String jsonString;
-  serializeJson(doc, jsonString);
-
-  // Gửi POST request
-  http.begin(url);
-  // http.addHeader("Content-Type", "application/json");
-
-  // // Gửi request và nhận kết quả
-  // int httpResponseCode = http.POST(jsonString);
-  
-  // Gửi request và nhận kết quả
-  int httpResponseCode = http.GET();
-
-
-  if (httpResponseCode > 0) {
-    String response = http.getString(); // Nhận phản hồi từ server
-    Serial.println(httpResponseCode);
-    Serial.print("Response: ");
-    Serial.println(response);
-  } else {
-    Serial.print("Error on HTTP request: ");
-    Serial.println(httpResponseCode);
-  }
-
-  http.end(); // Kết thúc kết nối HTTP
-*/
+  PostTemp(t);
+  PostMois(h);
 }
